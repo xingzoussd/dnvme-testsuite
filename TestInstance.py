@@ -32,6 +32,18 @@ class TestInstance(TestBase.TestBase):
 
     def initialize(self):
         super(TestInstance, self).initialize()
+        self.shell = self.lib.ShellCmd(self)
+        driver = self.shell.identify_driver()
+        if driver == "nvme":
+            self.logger.info("Remove current driver: nvme.")
+            self.shell.remove_driver("nvme")
+            self.logger.info("Install new driver: dnvme.")
+            self.shell.install_driver("dnvme")
+        elif driver != "dnvme":
+            self.logger.info("Install new driver: dnvme.")
+            self.shell.install_driver("dnvme")
+        else:
+            self.logger.info("Current driver is dnvme already.")
 
     def test(self):
         super(TestInstance, self).test()
