@@ -18,6 +18,7 @@ class LinuxCmd(TestInstance.TestInstance):
     def __init__(self):
         super(LinuxCmd, self).__init__()
         self.shell = self.lib.ShellCmd(self)
+        self.buff = self.lib.Buffer(test_instance=self)
 
     def add_arguments(self):
         super(LinuxCmd, self).add_arguments()
@@ -34,6 +35,8 @@ class LinuxCmd(TestInstance.TestInstance):
             self.logger.info("=========================({0}/{1})=========================".format(loop+1, self.args.loop))
             slot_bdf, drive_bdf = self.shell.lspci("Micron")
             self.logger.info("SLOT BDF: {}, DRIVE BDF:{}".format(slot_bdf, drive_bdf))
+            data = self.buff.create_buffer(size=4096, src_data=[0xA5]*4096, description="identify data")
+            self.buff.dump_data(data.buff)
 
     def cleanup(self):
         self.logger.info("Execute Cleanup.")
