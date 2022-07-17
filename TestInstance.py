@@ -10,7 +10,7 @@
 
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../"))
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import TestBase
 import subprocess
 import re
@@ -44,6 +44,9 @@ class TestInstance(TestBase.TestBase):
             self.shell.install_driver("dnvme")
         else:
             self.logger.info("Current driver is dnvme already.")
+        self.drive = self.lib.Dnvme(self)
+        self.drive.init_drive()
+        self.drive.identify_controller()
 
     def test(self):
         super(TestInstance, self).test()
