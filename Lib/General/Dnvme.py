@@ -12,6 +12,7 @@ import os
 import sys
 import re
 import ctypes
+import time
 from exceptions import Exception
 
 class Dnvme(object):
@@ -40,8 +41,13 @@ class Dnvme(object):
         if err_code != 0:
             raise Exception("Init drive get error: {}".format(self.function_status[err_code]))
 
-    def identify_controller(self, nsid=0xFFFFFFFF, ctrl_id=0):
+    def identify_controller(self, nsid=0, ctrl_id=0):
         buffer_obj = self.test_instance.lib.Buffer(self.test_instance)
-        identify_buffer = buffer_obj.create_buffer(size=self.identify_ctrl_buffer_size, description="controller data")
-        self.clib.dnvme_admin_identify_ctrl(self.device_handle, nsid, ctrl_id, identify_buffer.buff)
-        buffer_obj.dump_data(identify_buffer.buff)
+        identify_buffer = self.clib.create_buffer(self.identify_ctrl_buffer_size, 1)
+        self.clib.dnvme_admin_identify_ctrl(self.device_handle, nsid, ctrl_id, identify_buffer)
+        self.clib.dnvme_ring_doorbell(self.device_handle, 0)
+        self.clib.dnvme_cq_remain(self.device_handle, 0)
+        time.sleep(1)
+        identify_data = [self.clib.dump_data(identify_buffer, self.identify_ctrl_buffer_size, idx) for idx in range(self.identify_ctrl_buffer_size)]
+        id_buffer = buffer_obj.create_buffer(size=self.identify_ctrl_buffer_size, src_data=identify_data, data_len=self.identify_ctrl_buffer_size)
+        buffer_obj.dump_data(id_buffer.buff)

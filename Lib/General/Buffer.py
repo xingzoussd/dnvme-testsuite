@@ -17,20 +17,35 @@ class Buffer(object):
         self.buff = None
         self.description = None
 
-    def create_buffer(self, size, count=1, src_data=None, description=""):
+    def create_buffer(self, size, count=1, src_data=None, data_len=None, description=""):
         data = Buffer(self.test_instance)
         data.buff = ctypes.create_string_buffer(size * count)
         data.description = description
         if src_data is not None:
-            self.set_bytes(data.buff, size * count - 1, 0, src_data)
+            self.set_bytes(data.buff, size * count - 1, 0, src_data, data_len)
         return data
+
+    def data(self, buff, end_offset, start_offset=None, data_type=int):
+        ret = None
+        if data_type == int:
+            if start_offset is None:
+                ret = ord(buff[end_offset])
+            else:
+                ret = 0
+                for idx in range(end_offset, start_offset, -1):
+                    ret += ord(buff[idx])
+                    ret <<= 8
+                ret += ord(buff[start_offset])
+        elif data_type == str:
+            ret = buff[start_offset: end_offset + 1]
+        return ret
 
     def get_bytes(self, buff, end_offset, start_offset=None):
         if start_offset is None or start_offset >= end_offset:
             return [buff.raw[end_offset]]
         return buff.raw[start_offset: end_offset + 1]
 
-    def set_bytes(self, buff, end_offset, start_offset=None, src_data=None):
+    def set_bytes(self, buff, end_offset, start_offset=None, src_data=None, data_len=None):
         if src_data is None:
             if start_offset is None or start_offset >= end_offset:
                 buff.raw[end_offset] = 0x0
@@ -40,8 +55,8 @@ class Buffer(object):
             if start_offset is None or start_offset >= end_offset:
                 buff[end_offset] = chr(src_data[0])
             else:
-                if len(src_data) < end_offset + 1 - start_offset:
-                    buff[start_offset: start_offset + len(src_data)] = [chr(item) for item in src_data]
+                if data_len < end_offset + 1 - start_offset:
+                    buff[start_offset: start_offset + data_len] = [chr(item) for item in src_data]
                 else:
                     buff[start_offset: end_offset + 1] = [chr(item) for item in src_data[: end_offset + 1 - start_offset]]
 
@@ -81,7 +96,7 @@ if __name__ == "__main__":
     ins = Buffer(None)
     data = ins.create_buffer(size=1024, description="1K buffer", src_data=[0xA5]*512)
     ins.dump_data(data.buff)
-    ins.set_bytes(data.buff, 0x20, 0x15, [0x65, 0x66, 0x67, 0x68, 0x69, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x80])
+    ins.set_bytes(data.buff, 0x20, 0x15, [0x65, 0x66, 0x67, 0x68, 0x69, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x80], 16)
     ins.dump_data(data.buff)
     print(ins.get_bytes(data.buff, 0x20, 0x15))
     ins.set_word(data.buff, 0x66, 0x4567)
