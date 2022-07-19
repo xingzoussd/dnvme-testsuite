@@ -50,4 +50,5 @@ class Dnvme(object):
         time.sleep(1)
         identify_data = [self.clib.dump_data(identify_buffer, self.identify_ctrl_buffer_size, idx) for idx in range(self.identify_ctrl_buffer_size)]
         id_buffer = buffer_obj.create_buffer(size=self.identify_ctrl_buffer_size, src_data=identify_data, data_len=self.identify_ctrl_buffer_size)
-        buffer_obj.dump_data(id_buffer.buff)
+        # buffer_obj.dump_data(id_buffer.buff)
+        return id_buffer

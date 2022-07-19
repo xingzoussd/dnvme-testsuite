@@ -32,6 +32,10 @@ class TestInstance(TestBase.TestBase):
 
     def initialize(self):
         super(TestInstance, self).initialize()
+        cmd = ""
+        for txt in sys.argv:
+            cmd += txt + " "
+        self.logger.info("Running command: {}".format(cmd))
         self.shell = self.lib.ShellCmd(self)
         driver = self.shell.identify_driver()
         if driver == "nvme":
@@ -45,8 +49,15 @@ class TestInstance(TestBase.TestBase):
         else:
             self.logger.info("Current driver is dnvme already.")
         self.drive = self.lib.Dnvme(self)
+        self.identify = self.lib.Identify(self)
         self.drive.init_drive()
-        self.drive.identify_controller()
+        identify_ctrl_buffer = self.drive.identify_controller()
+        identify_ctrl_data = self.identify.controller_data(identify_ctrl_buffer.buff, verbose=False)
+        self.logger.info("FW Revision: {}".format(identify_ctrl_data["FR"]))
+        self.logger.info("Vendor: {:04X}".format(identify_ctrl_data["VID"]))
+        self.logger.info("Subsystem Vendor: {:04X}".format(identify_ctrl_data["SSVID"]))
+        self.logger.info("SN: {}".format(identify_ctrl_data["SN"]))
+        self.logger.info("MN: {}".format(identify_ctrl_data["MN"]))
 
     def test(self):
         super(TestInstance, self).test()
