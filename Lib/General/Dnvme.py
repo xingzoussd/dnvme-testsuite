@@ -32,6 +32,7 @@ class Dnvme(object):
             "ENABLE CONTROLLER ERROR",
         ]
         self.identify_ctrl_buffer_size = 4096
+        self.identify_ns_buffer_size = 4096
 
     def init_drive(self):
         self.device_handle = self.clib.open_dev("/dev/nvme0")
@@ -50,5 +51,17 @@ class Dnvme(object):
         time.sleep(1)
         identify_data = [self.clib.dump_data(identify_buffer, self.identify_ctrl_buffer_size, idx) for idx in range(self.identify_ctrl_buffer_size)]
         id_buffer = buffer_obj.create_buffer(size=self.identify_ctrl_buffer_size, src_data=identify_data, data_len=self.identify_ctrl_buffer_size)
+        # buffer_obj.dump_data(id_buffer.buff)
+        return id_buffer
+
+    def identify_namespace(self, nsid=1, ctrl_id=0):
+        buffer_obj = self.test_instance.lib.Buffer(self.test_instance)
+        identify_buffer = self.clib.create_buffer(self.identify_ns_buffer_size, 1)
+        self.clib.dnvme_admin_identify_ns(self.device_handle, nsid, ctrl_id, identify_buffer)
+        self.clib.dnvme_ring_doorbell(self.device_handle, 0)
+        self.clib.dnvme_cq_remain(self.device_handle, 0)
+        time.sleep(1)
+        identify_data = [self.clib.dump_data(identify_buffer, self.identify_ns_buffer_size, idx) for idx in range(self.identify_ns_buffer_size)]
+        id_buffer = buffer_obj.create_buffer(size=self.identify_ns_buffer_size, src_data=identify_data, data_len=self.identify_ns_buffer_size)
         # buffer_obj.dump_data(id_buffer.buff)
         return id_buffer
