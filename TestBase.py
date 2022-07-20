@@ -80,8 +80,8 @@ class TestBase(object):
 
     def cleanup(self):
         self.timeDuration = time.time() - self.time_start
-        self.logger.info("{0} duration: {1}.".format(self.__class__.__name__, self.timeDuration))
-        self.logger.info("{0} STATUS: {1}.".format(self.__class__.__name__, self.test_status))
+        self.logger.info("{} duration: {:.02f} seconds.".format(self.__class__.__name__, self.timeDuration))
+        self.logger.info("{} STATUS: {}.".format(self.__class__.__name__, self.test_status))
 
     def error_handle(self):
         self.test_status = self.status_fail
