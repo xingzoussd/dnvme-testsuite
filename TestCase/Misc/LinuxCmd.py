@@ -17,8 +17,8 @@ import TestInstance
 class LinuxCmd(TestInstance.TestInstance):
     def __init__(self):
         super(LinuxCmd, self).__init__()
-        self.shell = self.lib.ShellCmd(self)
-        self.buff = self.lib.Buffer(test_instance=self)
+        self.shell = self.lib.ShellCmd
+        self.buff = self.lib.Buffer
 
     def add_arguments(self):
         super(LinuxCmd, self).add_arguments()

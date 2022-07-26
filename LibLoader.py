@@ -21,5 +21,5 @@ class LibLoader(object):
             module_folder = os.path.dirname(lib)
             fp, pathname, description = imp.find_module(module_name, [module_folder])
             module = imp.load_module(module_name, fp, pathname, description)
-            setattr(self.test_instance, module_name, getattr(module, module_name))
+            setattr(self.test_instance, module_name, getattr(module, module_name)(self.test_instance))
         return self.test_instance
