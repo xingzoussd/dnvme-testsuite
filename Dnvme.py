@@ -109,43 +109,63 @@ class Dnvme(object):
     def set_data(self, addr, size, offset, value):
         self.clib.set_data(addr, size, offset, value)
 
-    def identify_controller(self, nsid=0, ctrl_id=0):
+    def identify_controller(self, nsid=0, ctrl_id=0, uuid_idx=0):
         # import pdb
         # pdb.set_trace()
         identify_buffer = self.test_instance.lib.Buffer
         identify_buffer.create_buffer(self.identify_ctrl_buffer_size, 1, "Identify Controller")
-        self.clib.dnvme_admin_identify_ctrl(self.device_handle, nsid, ctrl_id, identify_buffer.addr)
+        self.clib.dnvme_admin_identify_ctrl(self.device_handle, nsid, ctrl_id, uuid_idx, identify_buffer.addr)
         self.clib.dnvme_ring_doorbell(self.device_handle, 0)
         self.clib.dnvme_cq_remain(self.device_handle, 0)
         time.sleep(1)
-        identify_buffer.dump_data()
+        # identify_buffer.dump_data()
         return identify_buffer
 
-    def identify_namespace(self, nsid=1, ctrl_id=0):
+    def identify_namespace(self, nsid=1, ctrl_id=0, uuid_idx=0):
         identify_buffer = self.test_instance.lib.Buffer
         identify_buffer.create_buffer(self.identify_ns_buffer_size, 1, "Identify Namespace")
-        self.clib.dnvme_admin_identify_ns(self.device_handle, nsid, ctrl_id, identify_buffer.addr)
+        self.clib.dnvme_admin_identify_ns(self.device_handle, nsid, ctrl_id, uuid_idx, identify_buffer.addr)
         self.clib.dnvme_ring_doorbell(self.device_handle, 0)
         self.clib.dnvme_cq_remain(self.device_handle, 0)
         time.sleep(1)
-        identify_buffer.dump_data()
+        # identify_buffer.dump_data()
         return identify_buffer
 
     def delete_iosq(self, qid=1, nsid=0, trigger_db=True):
-        pass
-
-    def create_iosq(self, qid=1, cqid=1, qsize=4096, qprio=1, contig=1, nsid=0, nvmsetid=0, trigger_db=True):
-        iosq_buffer = self.clib.create_buffer(self.sq_unit_size, qsize)
-        self.clib.dnvme_admin_create_iosq(self.device_handle, 0, qid, cqid, qsize, contig, iosq_buffer, qprio, nvmsetid)
+        self.clib.dnvme_admin_delete_iosq(self.device_hancle, nsid, qid)
         if trigger_db:
             self.clib.dnvme_ring_doorbell(self.device_handle, 0)
             ret = self.clib.dnvme_cq_reap(self.device_handle, 0, cq_remaining, cq_buffer, cq_buffer_size);
             if ret:
                 return ret
+        return None
+
+    def create_iosq(self, qid=1, cqid=1, qsize=4096, qprio=1, contig=1, nsid=0, nvmsetid=0, trigger_db=True):
+        iosq_buffer = self.clib.create_buffer(self.sq_unit_size, qsize)
+        self.clib.dnvme_admin_create_iosq(self.device_handle, nsid, qid, cqid, qsize, contig, iosq_buffer, qprio, nvmsetid)
+        if trigger_db:
+            self.clib.dnvme_ring_doorbell(self.device_handle, 0)
+            ret = self.clib.dnvme_cq_reap(self.device_handle, 0, cq_remaining, cq_buffer, cq_buffer_size);
+            if ret:
+                return ret
+        return None
 
     def delete_iocq(self, qid=1, nsid=0, trigger_db=True):
-        pass
+        self.clib.dnvme_admin_delete_iocq(self.device_handle, nsid, qid)
+        if trigger_db:
+            self.clib.dnvme_ring_doorbell(self.device_handle, 0)
+            ret = self.clib.dnvme_cq_reap(self.device_handle, 0, cq_remaining, cq_buffer, cq_buffer_size);
+            if ret:
+                return ret
+        return None
 
-    def create_iocq(self, qid=1, buf=None, qsize=4096, iv=0, ien=0, pc=1, nsid=0, trigger_db=True):
-        pass
+    def create_iocq(self, qid=1, buf=None, qsize=4096, iv=0, ien=1, pc=1, nsid=0, trigger_db=True):
+        iocq_buffer = self.clib.create_buffer(self.cq_unit_size, qsize)
+        self.clib.dnvme_admin_create_iocq(self.device_handle, nsid, qid, iv, qsize, pc, iocq_buffer)
+        if trigger_db:
+            self.clib.dnvme_ring_doorbell(self.device_handle, 0)
+            ret = self.clib.dnvme_cq_reap(self.device_handle, 0, cq_remaining, cq_buffer, cq_buffer_size);
+            if ret:
+                return ret
+        return None
 

@@ -174,7 +174,6 @@ class Identify(object):
                                  "APW": buffer_obj.data(psd_offset_bytes + 22) & 0x7,
                                  "APS": (buffer_obj.data(psd_offset_bytes + 22) >> 6) & 0x3}
 
-
         if verbose:
             self.test_instance.logger.info("Identify controller data structure: \n{}".format(id_ctrl_data))
         return id_ctrl_data
